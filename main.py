@@ -1,7 +1,9 @@
+from cProfile import label
+
 import numpy as np
 import pandas as pd
 from matplotlib.lines import lineMarkers
-from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title
+from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend
 from numpy import polyfit
 
 from peakdetect import simplePeakDetect
@@ -19,9 +21,9 @@ T1 = dataFile1.get("Temp") # y is a panda Series of temperatures
 V1 = dataFile1.get("Voltage") # y is a panda Series of voltages
 T2 = dataFile2.get("Temp") # y is a panda Series of temperatures
 V2 = dataFile2.get("Voltage") # y is a panda Series of voltages
-T3 = dataFile3.get("Temp") # y is a panda Series of temperatures
-V3 = dataFile3.get("Voltage") # y is a panda Series of voltages
-
+T3 = dataFile3.iloc[2:8, 0] # y is a panda Series of temperatures
+V3 = dataFile3.iloc[2:8, 1] # y is a panda Series of voltages
+print(V3)
 
 # linearizing
 x1 = 1 / T1
@@ -63,28 +65,46 @@ print("BLUE: m = " + str(m3) + ", c = "+ str(c3))
 print("BLACK is from example.txt file, RED is from calibration example and template, BLUE is from big data files")
 
 ### peak detection graphing
-
+### from blue line in graph above, m = -15404.425383931075, c = 10.876797484015087
+m4 = m3
+c4 = c3
+blankedBlue = 0.001508862
 dataFile4 = pd.read_csv("sampleBigData/1200C Si APD open 1.csv")
-y4 = dataFile4.get("Voltage") # y is a panda Series of voltages
-lny4 = []
-for value in y4:
-    lny4.append(math.log(value))
+v4 = dataFile4.get("Voltage") # y is a panda Series of voltages
+lnv4 = []
+for value in v4:
+    lnv4.append(math.log(value-blankedBlue))
+
+temp4 = []
+for value in lnv4:
+    temp4.append(m3/(value - c3)) ## from equation T = m/(lnV - c)
+
 lowlim = 0
 prec = 0.0001
-uplim = len(lny4)
+uplim = len(lnv4)
 
 x4 = np.arange(lowlim, uplim*prec, prec) # ndarray of x values
 figure()
-plot(x4, lny4, marker=".", markersize=5 , ls=" ")
+plot(x4, lnv4, marker=".", markersize=5, ls=" ")
 title("Peak detection of 1 data set at temp = 1200 °C (not blanked yet)")
 xlabel("Arbitrary time (s)")
 ylabel("ln V")
 
 #peak detection
-peaks = simplePeakDetect(x4,lny4,10000)
+peaks = simplePeakDetect(x4, lnv4, 10000)
 plot(x4, peaks, marker="", markersize = 2)
 
+figure()
+plot(x4, temp4, marker=".", markersize=5, ls=" ",label='Calibrated Measurement')
+title("Temperature of 1 data set at temp = 1473.15 °C (blanked)")
+xlabel("Arbitrary time (s)")
+ylabel("Temperature (K)")
 
+l4 = [] # line at T = 1473.15 K
+for value in x4:
+    l4.append(1473.15)
+plot(x4, l4, marker=" ", markersize=5, ls="-",label='Blackbody Temperature')
+legend()
 
 ### dampened sin wave to test peak detection
 lowlim = 0
@@ -99,12 +119,10 @@ i = 0
 for u in y5Undamped:
     if i < len(y5Undamped)/2:
         factor = np.exp(float(0.01)*x5[i])
-        print(float(factor))
         y5.append(u*factor)
 
     else:
         factor = np.exp(float(-0.01) * x5[i])
-        print(float(factor))
         y5.append(u * factor)
     i = i + 1
 
