@@ -64,7 +64,7 @@ print("RED: m = " + str(m2) + ", c = "+ str(c2))
 print("BLUE: m = " + str(m3) + ", c = "+ str(c3))
 print("BLACK is from example.txt file, RED is from calibration example and template, BLUE is from big data files")
 
-### peak detection graphing
+### peak detection graphing and temp-time
 ### from blue line in graph above, m = -15404.425383931075, c = 10.876797484015087
 m4 = m3
 c4 = c3
@@ -103,7 +103,7 @@ ylabel("Temperature (K)")
 l4 = [] # line at T = 1473.15 K
 for value in x4:
     l4.append(1473.15)
-plot(x4, l4, marker=" ", markersize=5, ls="-",label='Blackbody Temperature')
+plot(x4, l4, marker=" ", markersize=5, ls="-", linewidth='4',label='Blackbody Temperature')
 legend()
 
 ### dampened sin wave to test peak detection
