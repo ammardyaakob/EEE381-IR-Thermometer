@@ -106,32 +106,4 @@ for value in x4:
 plot(x4, l4, marker=" ", markersize=5, ls="-", linewidth='4',label='Blackbody Temperature')
 legend()
 
-### dampened sin wave to test peak detection
-lowlim = 0
-prec = 0.1
-uplim = 100
-
-x5 = np.arange(lowlim, uplim, prec) # ndarray of x value
-
-y5Undamped = np.sin(x5) # corresponding sinx values
-y5 = []
-i = 0
-for u in y5Undamped:
-    if i < len(y5Undamped)/2:
-        factor = np.exp(float(0.01)*x5[i])
-        y5.append(u*factor)
-
-    else:
-        factor = np.exp(float(-0.01) * x5[i])
-        y5.append(u * factor)
-    i = i + 1
-
-figure()
-title("Peak Detection Test on Generated Dampened Wave")
-xlabel("Time")
-ylabel("Amplitude")
-plot(x5, y5, marker=".", markersize=5 , ls=" ")
-peaks = simplePeakDetect(x5,y5,5)
-plot(x5, peaks, marker="", markersize = 2)
-
 show()
