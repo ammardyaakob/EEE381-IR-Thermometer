@@ -91,7 +91,7 @@ lowlim = 0
 prec = 10 # interval
 uplim = 1000
 
-x4 = np.arange(lowlim, uplim, prec) # ndarray of x values
+x4 = np.arange(lowlim, uplim, prec) # ndarray of x values, mimicking the time
 print((uplim-lowlim)/prec)
 temp4 = []
 for i in range(int((uplim-lowlim)/prec)):
