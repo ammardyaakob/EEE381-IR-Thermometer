@@ -3,9 +3,10 @@ from cProfile import label
 import numpy as np
 import pandas as pd
 from matplotlib.lines import lineMarkers
-from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend
+from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend, grid, axhline, axline, axvspan, axvline
 from numpy import polyfit
 
+from averaging import simpleAvg
 from peakdetect import simplePeakDetect
 import math as math
 # Sine wave generator + plot
@@ -43,8 +44,8 @@ plot(x1, y1, marker=".", markersize=5, ls=" ", color="black")
 plot(x2, y2, marker=".", markersize=5, ls=" ", color="red")
 plot(x3, y3, marker=".", markersize=5, ls=" ", color="blue")
 
-title("Best fits and linearization of 3 temp data sets")
-xlabel("1/T")
+title("Linearisation of Voltage to Temperature of Different Photodiodes")
+xlabel(r"$\frac{1}{T}$ ($K^{-1}$)", size="12")
 ylabel("ln V")
 
 m1, c1 = polyfit(x1, y1, 1) # get m and c from best fit, y = mx + c
@@ -55,35 +56,49 @@ bestfy1 = m1 * x1 + c1
 bestfy2 = m2 * x2 + c2
 bestfy3 = m3 * x3 + c3
 
-plot(x1, bestfy1, ls=":", color="black")
-plot(x2, bestfy2, ls=":", color="red")
-plot(x3, bestfy3, ls=":", color="blue")
+plot(x1, bestfy1, ls=":", color="black", label="InGaAs Photodiode")
+plot(x2, bestfy2, ls=":", color="red",label="Si Photodiode")
+plot(x3, bestfy3, ls=":", color="blue", label="Si Avalanche Photodiode")
+
+legend()
+grid()
+axhline(0,color='black') # x = 0
+axvline(0,color='black') # y = 0
 
 print("BLACK: m = " + str(m1) + ", c = "+ str(c1) )
 print("RED: m = " + str(m2) + ", c = "+ str(c2))
 print("BLUE: m = " + str(m3) + ", c = "+ str(c3))
 print("BLACK is from example.txt file, RED is from calibration example and template, BLUE is from big data files")
 
-### peak detection graphing and temp-time
-### from blue line in graph above, m = -15404.425383931075, c = 10.876797484015087
+### convert voltage to temperature using calibration parameters
+
+# from blue line in graph above, m = -15404.425383931075, c = 10.876797484015087
 m4 = m3
 c4 = c3
+
+# remove blanked value
 blankedBlue = 0.001508862
 dataFile4 = pd.read_csv("sampleBigData/1200C Si APD open 1.csv")
-v4 = dataFile4.get("Voltage") # y is a panda Series of voltages
-lnv4 = []
+v4 = dataFile4.get("Voltage") # v4 is a panda Series of voltages from Si APD
+lnv4 = [] # get lnV values
 for value in v4:
     lnv4.append(math.log(value-blankedBlue))
 
-temp4 = []
-for value in lnv4:
-    temp4.append(m3/(value - c3)) ## from equation T = m/(lnV - c)
 
+# range of time to use in us
+micro = 0.000001
 lowlim = 0
-prec = 0.0001
-uplim = len(lnv4)
+prec = 10 # interval
+uplim = 1000
 
-x4 = np.arange(lowlim, uplim*prec, prec) # ndarray of x values
+x4 = np.arange(lowlim, uplim, prec) # ndarray of x values
+print((uplim-lowlim)/prec)
+temp4 = []
+for i in range(int((uplim-lowlim)/prec)):
+    temp4.append(m3/(lnv4[i] - c3)) ## from equation T = m/(lnV - c)
+
+### peak detection graphing
+'''
 figure()
 plot(x4, lnv4, marker=".", markersize=5, ls=" ")
 title("Peak detection of 1 data set at temp = 1200 °C (not blanked yet)")
@@ -93,17 +108,30 @@ ylabel("ln V")
 #peak detection
 peaks = simplePeakDetect(x4, lnv4, 10000)
 plot(x4, peaks, marker="", markersize = 2)
+'''
+
+# Temperature
 
 figure()
-plot(x4, temp4, marker=".", markersize=5, ls=" ",label='Calibrated Measurement')
-title("Temperature of 1 data set at temp = 1473.15 °C (blanked)")
-xlabel("Arbitrary time (s)")
+
+plot(x4, temp4, marker=".", markersize=5, ls="-", linewidth="2",label='Calibrated Measurement', color="black")
+title("Si APD measurements of a blackbody furnace at T = 1473.15 K")
+xlabel("Time (µs)")
 ylabel("Temperature (K)")
 
-l4 = [] # line at T = 1473.15 K
+# line at T = 1473.15 K
+l4 = []
 for value in x4:
     l4.append(1473.15)
-plot(x4, l4, marker=" ", markersize=5, ls="-", linewidth='4',label='Blackbody Temperature')
+#plot(x4, l4, marker=" ", markersize=5, ls="-", linewidth='4',label='Blackbody Temperature')
+
+averages10 = simpleAvg(x4, temp4, 20)
+averages5 = simpleAvg(x4, temp4, 5)
+averages50 = simpleAvg(x4, temp4, 50)
+plot(x4, averages10, marker="", markersize=3, ls="-", linewidth='1.5',label='Averaging: 10 data points',color = "red")
+plot(x4, averages5, marker="", markersize=3, ls="-", linewidth='1.5',label='Averaging: 5 data points',color = "green")
+plot(x4, averages50, marker="", markersize=3, ls="-", linewidth='1.5',label='Averaging: 50 data points', color = "magenta")
+
 legend()
 
 show()

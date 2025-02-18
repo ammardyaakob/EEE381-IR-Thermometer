@@ -9,26 +9,15 @@ def simplePeakDetect(xArr: list, yArr : list, holdParameter):
     # high peak should sustain, unless a higher peak is found.
 
     peakList = []
-    newPeak = yArr[0]
+    currPeak = yArr[0]
     hold = holdParameter
 
-    for i in range(len(xArr)-1):
-        if i > 0 and yArr[i-1] < yArr[i] and yArr[i+1] < yArr[i]:
-            if yArr[i] > newPeak:
-                newPeak = yArr[i]
-                peakList.append(newPeak)
-                hold = holdParameter
-            elif hold > 0:
-                hold = hold - 1
-                peakList.append(newPeak)
-            else:
-                newPeak = yArr[i]
-                peakList.append(newPeak)
-                hold = holdParameter
+    for i in range(len(xArr)):
+        peakList.append(currPeak)
+        if yArr[i]> currPeak:
+            currPeak = yArr[i]
         else:
-            peakList.append(newPeak)
-            hold = hold - 1
-    peakList.append(newPeak) # add 1 more datapoint to make sure peak array is same size as X array
+            currPeak = currPeak - (holdParameter/1000)
     return peakList
 
 

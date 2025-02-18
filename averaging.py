@@ -1,21 +1,24 @@
+from queue import Queue
 
 def simpleAvg(xArr: list, yArr : list, holdParameter):
 
     hold = 0
     total = 0
-    currAvg = yArr[0]
+    currAvg = 0
     avg = []
+    queue = Queue(maxsize=holdParameter)
 
     for i in range(len(xArr)):
 
-        # Find current average (sample size set by to holdParameter)
-        if hold < holdParameter:
-            hold = hold + 1
-            total = total + yArr[i] # add values to total
-        else: # Once hold = holdParameter e.g. sample size reached
-            currAvg = total/holdParameter # calculate average
-            hold = 0 # reset sample parameters
-            total = 0
+        if not queue.full():
+            queue.put(yArr[i])
+            total = total + yArr[i]
+            currAvg = total / (i+1)
+
+        else:
+            total = (currAvg * holdParameter) + yArr[i] - queue.get() #  new sum = the current average * the amount of values that made the average + new value - old value
+            queue.put(yArr[i])
+            currAvg = total / holdParameter
 
         avg.append(currAvg) # add current average to list
     return avg

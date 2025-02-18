@@ -1,6 +1,6 @@
 ### dampened sin wave dummy data to test time functions
 import numpy as np
-from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend
+from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend, subplot
 
 from averaging import simpleAvg
 from peakdetect import simplePeakDetect
@@ -10,8 +10,7 @@ temp = []
 lowlim = 0
 samples = 1000
 uplim = 500
-noiseAmplitude = 0.5
-
+noiseAmplitude = 1
 
 x5 = np.linspace(lowlim, uplim, samples)  # time from 0 to 100 seconds, 100 sample points # ndarray of x value
 
@@ -33,26 +32,37 @@ noise = np.random.normal(0, noiseAmplitude, size=x5.shape)
 for i in range(len(trueTemp)):
     temp.append(trueTemp[i] + noise[i])
 
-# plot graph
+# graph without noise
 figure()
-title("Peak Detection Test on Generated Wave")
-xlabel("Time")
-ylabel("Temperature")
-plot(x5, temp, marker=".", markersize=5, ls="")
+subplot(3,1,1)
+title("Generated Wave Without Noise")
+xlabel("Time (s)")
+ylabel("Temperature (K)")
+plot(x5, trueTemp, marker=".", markersize=5, ls="", label = "Generated Datapoints")
 
 # peak detect
-peaks = simplePeakDetect(x5, temp, 50)
-plot(x5, peaks, marker="", markersize = 2)
+subplot(3,1,2)
+title("Peak Detection Test on Generated Noisy Wave")
+xlabel("Time (s)")
+ylabel("Temperature (K)")
+plot(x5, temp, marker=".", markersize=5, ls="", label = "Generated Datapoints")
 
-#plot graph 2
-figure()
-title("Averaging Test on Generated Wave")
-xlabel("Time")
-ylabel("Temperature")
-plot(x5, temp, marker=".", markersize=5, ls="")
+
+peaks = simplePeakDetect(x5, temp, 25)
+plot(x5, peaks, marker="", markersize = 2, label = "Peak Detection Function")
+legend()
+#averaging
+
+subplot(3,1,3)
+title("Averaging Test on Generated Noisy Wave")
+xlabel("Time (s)")
+ylabel("Temperature (K)")
+
+plot(x5, temp, marker=".", markersize=5, ls="", label="Generated Datapoints")
 
 # average
-avgs = simpleAvg(x5, temp, 250)
-plot(x5, avgs, marker="", markersize = 2, ls="--", linewidth="3")
+avgs = simpleAvg(x5, temp, 15)
 
+plot(x5, avgs, marker=".", markersize = 4, ls="", linewidth="3", label = "Averaging Function")
+legend()
 show()
