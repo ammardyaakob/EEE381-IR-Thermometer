@@ -68,7 +68,7 @@ axvline(0,color='black') # y = 0
 print("BLACK: m = " + str(m1) + ", c = "+ str(c1) )
 print("RED: m = " + str(m2) + ", c = "+ str(c2))
 print("BLUE: m = " + str(m3) + ", c = "+ str(c3))
-print("BLACK is from example.txt file, RED is from calibration example and template, BLUE is from big data files")
+print("BLACK is from example.txt file (InGaAs), RED is from calibration example and template (Si), BLUE is from big data files (Si APD)")
 
 ### convert voltage to temperature using calibration parameters
 
@@ -98,17 +98,17 @@ for i in range(int((uplim-lowlim)/prec)):
     temp4.append(m3/(lnv4[i] - c3)) ## from equation T = m/(lnV - c)
 
 ### peak detection graphing
-'''
+
 figure()
-plot(x4, lnv4, marker=".", markersize=5, ls=" ")
+plot(x4, temp4, marker=".", markersize=5, ls="-")
 title("Peak detection of 1 data set at temp = 1200 °C (not blanked yet)")
 xlabel("Arbitrary time (s)")
 ylabel("ln V")
 
 #peak detection
-peaks = simplePeakDetect(x4, lnv4, 10000)
+peaks = simplePeakDetect(x4, temp4, 10)
 plot(x4, peaks, marker="", markersize = 2)
-'''
+
 
 # Temperature
 
@@ -128,6 +128,7 @@ for value in x4:
 averages10 = simpleAvg(x4, temp4, 20)
 averages5 = simpleAvg(x4, temp4, 5)
 averages50 = simpleAvg(x4, temp4, 50)
+
 plot(x4, averages10, marker="", markersize=3, ls="-", linewidth='1.5',label='Averaging: 10 data points',color = "red")
 plot(x4, averages5, marker="", markersize=3, ls="-", linewidth='1.5',label='Averaging: 5 data points',color = "green")
 plot(x4, averages50, marker="", markersize=3, ls="-", linewidth='1.5',label='Averaging: 50 data points', color = "magenta")

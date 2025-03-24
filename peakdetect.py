@@ -11,13 +11,12 @@ def simplePeakDetect(xArr: list, yArr : list, holdParameter):
     peakList = []
     currPeak = yArr[0]
     hold = holdParameter
-
     for i in range(len(xArr)):
-        peakList.append(currPeak)
-        if yArr[i]> currPeak:
+        if yArr[i] >= currPeak:
             currPeak = yArr[i]
         else:
             currPeak = currPeak - (holdParameter/1000)
+        peakList.append(currPeak)
     return peakList
 
 
