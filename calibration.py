@@ -101,3 +101,9 @@ def voltToTemp(vArr, m, c, celsius):
             temp.append(m/(math.log(vArr[i]) - c)) ## from equation T = m/(lnV - c)
     return temp
 
+def voltToEmis(vArr, m, c, celsius): #compares with emissivity 0 at T = 1300C
+    emis = []
+    for i in range(len(vArr)):
+        emis.append(vArr[i]/1.6793170632779995) ## from equation T = m/(lnV - c)
+    return emis
+

@@ -6,7 +6,7 @@ from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend,
 from numpy import polyfit
 
 from averaging import simpleAvg
-from calibration import findLinParams, voltToTemp
+from calibration import findLinParams, voltToTemp, voltToEmis
 from peakdetect import simplePeakDetect
 import math as math
 
@@ -25,12 +25,36 @@ for i in range(13):
     t = np.arange(0, N / Fs, 1 / Fs)
     v = file.iloc[0:N, 1]
     temp = voltToTemp(v, m, c, True)
-
     plot(t * 100, temp, label="Emissivity #"+str(i+1))
 
 title("IRT Temperature for Emissivity")
 xlabel("Time (ms)")
-ylabel("Temperature (T)")
+ylabel("Temperature (oC)")
+
+# Shrink current axis's height by 10% on the bottom
+box = ax.get_position()
+ax.set_position([box.x0, box.y0 + box.height * 0.2,
+                 box.width, box.height * 0.8])
+
+# Put a legend below current axis
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.125),
+          fancybox=True, shadow=True, ncol=5)
+
+fig = figure(figsize=(9, 6))
+ax = subplot(111)
+
+for i in range(13):
+    filePath = folderStr+"E"+str(i+1)+".csv"
+    file = pd.read_csv(filePath)
+
+    t = np.arange(0, N / Fs, 1 / Fs)
+    v = file.iloc[0:N, 1]
+    emis = voltToEmis(v,m,c, True)
+    plot(t * 100, emis, label="Emissivity #"+str(i+1))
+
+title("IRT Gauze Emissivities")
+xlabel("Time (ms)")
+ylabel("Emissivity")
 
 # Shrink current axis's height by 10% on the bottom
 box = ax.get_position()
