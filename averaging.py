@@ -1,6 +1,6 @@
 from queue import Queue
 
-def simpleAvg(xArr: list, yArr : list, holdParameter):
+def simpleAvg(yArr : list, holdParameter):
 
     hold = 0
     total = 0
@@ -8,7 +8,7 @@ def simpleAvg(xArr: list, yArr : list, holdParameter):
     avg = []
     queue = Queue(maxsize=holdParameter)
 
-    for i in range(len(xArr)):
+    for i in range(len(yArr)):
 
         if not queue.full():
             queue.put(yArr[i])

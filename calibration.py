@@ -45,8 +45,8 @@ def findLinGraph(folderStr : str, lowestTemp, highestTemp, increment, samples, c
         dfBlocked = pd.read_csv(filePathBlocked)
 
         # calculate the average of each set
-        avg = simpleAvg(df.loc[:, "Time"], df.loc[:, "Dev1/ai0"], samples)[samples-1]
-        avgBlocked = simpleAvg(dfBlocked.loc[:, "Time"], dfBlocked.loc[:, "Dev1/ai0"], samples)[samples-1]
+        avg = simpleAvg(df.loc[:, "Dev1/ai0"], samples)[samples-1]
+        avgBlocked = simpleAvg(dfBlocked.loc[:, "Dev1/ai0"], samples)[samples-1]
         print(temperature, avg-avgBlocked)
         voltages.append(avg-avgBlocked)
 
@@ -76,8 +76,8 @@ def findLinParams(folderStr : str, lowestTemp, highestTemp, increment, samples, 
         dfBlocked = pd.read_csv(filePathBlocked)
 
         # calculate the average of each set
-        avg = simpleAvg(df.loc[:, "Time"], df.loc[:, "Dev1/ai0"], samples)[samples-1]
-        avgBlocked = simpleAvg(dfBlocked.loc[:, "Time"], dfBlocked.loc[:, "Dev1/ai0"], samples)[samples-1]
+        avg = simpleAvg(df.loc[:, "Dev1/ai0"], samples)[samples-1]
+        avgBlocked = simpleAvg(dfBlocked.loc[:, "Dev1/ai0"], samples)[samples-1]
         print(temperature, avg-avgBlocked)
         voltages.append(avg-avgBlocked)
 
@@ -104,6 +104,11 @@ def voltToTemp(vArr, m, c, celsius):
 def voltToEmis(vArr, m, c, celsius): #compares with emissivity 0 at T = 1300C
     emis = []
     for i in range(len(vArr)):
-        emis.append(vArr[i]/1.6793170632779995) ## from equation T = m/(lnV - c)
+        emis.append(vArr[i]/1.6793170632779995) ## V/V0
     return emis
 
+def emisComp(vArr, emis):
+    comped = []
+    for v in vArr:
+        comped.append(v/emis)
+    return comped
