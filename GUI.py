@@ -72,14 +72,14 @@ class TemperatureProcessingApp:
             self.time_constant_entry.config(state="normal")
         else:
             self.time_constant_entry.config(state="disabled")
-            self.time_constant_value.set('')
+            #self.time_constant_value.set('')
 
     def toggle_num_samples(self):
         if self.averaging_enabled.get():
             self.num_samples_entry.config(state="normal")
         else:
             self.num_samples_entry.config(state="disabled")
-            self.num_samples_value.set('')
+            #self.num_samples_value.set('')
 
     def browse_raw_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
