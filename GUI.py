@@ -2,22 +2,20 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import pandas as pd
 
-# Dummy function placeholders
-def process_data(raw_file, calibration_files, emissivity, apply_peak_detection, apply_averaging):
-    # These functions should already exist according to you.
-    # Call your existing processing functions here
+# Dummy function placeholder
+def process_data(raw_file, calibration_files, emissivity, apply_peak_detection, time_constant, apply_averaging, num_samples):
     print(f"Processing:\nRaw File: {raw_file}\nCalibration Files: {calibration_files}\n"
-          f"Emissivity: {emissivity}\nPeak Detection: {apply_peak_detection}\nAveraging: {apply_averaging}")
-    # Example dummy load
+          f"Emissivity: {emissivity}\nPeak Detection: {apply_peak_detection}\n"
+          f"Time Constant: {time_constant}\nAveraging: {apply_averaging}\n"
+          f"Number of Samples: {num_samples}")
     raw_data = pd.read_csv(raw_file)
-    # Perform processing...
     messagebox.showinfo("Processing Complete", "Data has been processed successfully!")
 
 class TemperatureProcessingApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Temperature Data Processor")
-        self.root.geometry("500x400")
+        self.root.geometry("500x600")
 
         # Variables
         self.raw_file_path = tk.StringVar()
@@ -25,11 +23,16 @@ class TemperatureProcessingApp:
         self.emissivity_value = tk.StringVar()
         self.peak_detection_enabled = tk.BooleanVar()
         self.averaging_enabled = tk.BooleanVar()
+        self.time_constant_value = tk.StringVar()
+        self.num_samples_value = tk.StringVar()
 
         # Widgets
         self.create_widgets()
 
     def create_widgets(self):
+        # Title
+        tk.Label(self.root, text="Temperature Data Processor", font=("Helvetica", 16)).pack(pady=10)
+
         # Raw File
         tk.Label(self.root, text="Raw Temperature CSV:").pack(pady=5)
         tk.Entry(self.root, textvariable=self.raw_file_path, width=50, state='readonly').pack()
@@ -45,12 +48,38 @@ class TemperatureProcessingApp:
         tk.Label(self.root, text="Emissivity Value:").pack(pady=5)
         tk.Entry(self.root, textvariable=self.emissivity_value).pack()
 
-        # Options
-        tk.Checkbutton(self.root, text="Enable Peak Detection", variable=self.peak_detection_enabled).pack(pady=5)
-        tk.Checkbutton(self.root, text="Enable Averaging", variable=self.averaging_enabled).pack(pady=5)
+        # Peak Detection
+        tk.Checkbutton(self.root, text="Enable Peak Detection", variable=self.peak_detection_enabled, command=self.toggle_time_constant).pack(pady=5)
+
+        # Time Constant (enabled only if peak detection checked)
+        tk.Label(self.root, text="Time Constant (s):").pack(pady=5)
+        self.time_constant_entry = tk.Entry(self.root, textvariable=self.time_constant_value, state="disabled")
+        self.time_constant_entry.pack()
+
+        # Averaging
+        tk.Checkbutton(self.root, text="Enable Averaging", variable=self.averaging_enabled, command=self.toggle_num_samples).pack(pady=5)
+
+        # Number of Samples (enabled only if averaging checked)
+        tk.Label(self.root, text="Number of Samples for Averaging:").pack(pady=5)
+        self.num_samples_entry = tk.Entry(self.root, textvariable=self.num_samples_value, state="disabled")
+        self.num_samples_entry.pack()
 
         # Process Button
         tk.Button(self.root, text="Process Data", command=self.process_data).pack(pady=20)
+
+    def toggle_time_constant(self):
+        if self.peak_detection_enabled.get():
+            self.time_constant_entry.config(state="normal")
+        else:
+            self.time_constant_entry.config(state="disabled")
+            self.time_constant_value.set('')
+
+    def toggle_num_samples(self):
+        if self.averaging_enabled.get():
+            self.num_samples_entry.config(state="normal")
+        else:
+            self.num_samples_entry.config(state="disabled")
+            self.num_samples_value.set('')
 
     def browse_raw_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
@@ -67,19 +96,37 @@ class TemperatureProcessingApp:
         if not self.raw_file_path.get():
             messagebox.showerror("Error", "Please select a raw temperature CSV file.")
             return
+
         try:
             emissivity = float(self.emissivity_value.get())
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid emissivity value.")
             return
 
-        # Call the processing function (your implementation)
+        time_constant = None
+        if self.peak_detection_enabled.get():
+            try:
+                time_constant = float(self.time_constant_value.get())
+            except ValueError:
+                messagebox.showerror("Error", "Please enter a valid time constant value.")
+                return
+
+        num_samples = None
+        if self.averaging_enabled.get():
+            try:
+                num_samples = int(self.num_samples_value.get())
+            except ValueError:
+                messagebox.showerror("Error", "Please enter a valid integer for number of samples.")
+                return
+
         process_data(
             raw_file=self.raw_file_path.get(),
             calibration_files=self.calibration_file_paths,
             emissivity=emissivity,
             apply_peak_detection=self.peak_detection_enabled.get(),
-            apply_averaging=self.averaging_enabled.get()
+            time_constant=time_constant,
+            apply_averaging=self.averaging_enabled.get(),
+            num_samples=num_samples
         )
 
 # Run the app

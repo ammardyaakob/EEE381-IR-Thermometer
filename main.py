@@ -1,136 +1,138 @@
-import tkinter as tk
-from tkinter import filedialog, messagebox
+from cProfile import label
+
+import numpy as np
 import pandas as pd
+from matplotlib.lines import lineMarkers
+from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend, grid, axhline, axline, axvspan, axvline
+from numpy import polyfit
 
-# Dummy function placeholder
-def process_data(raw_file, calibration_files, emissivity, apply_peak_detection, time_constant, apply_averaging, num_samples):
-    print(f"Processing:\nRaw File: {raw_file}\nCalibration Files: {calibration_files}\n"
-          f"Emissivity: {emissivity}\nPeak Detection: {apply_peak_detection}\n"
-          f"Time Constant: {time_constant}\nAveraging: {apply_averaging}\n"
-          f"Number of Samples: {num_samples}")
-    raw_data = pd.read_csv(raw_file)
-    messagebox.showinfo("Processing Complete", "Data has been processed successfully!")
+from averaging import simpleAvg
+from peakdetect import simplePeakDetect
+import math as math
 
-class TemperatureProcessingApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Temperature Data Processor")
-        self.root.geometry("500x600")
+# Sine wave generator + plot
+# parameters
 
-        # Variables
-        self.raw_file_path = tk.StringVar()
-        self.calibration_file_paths = []
-        self.emissivity_value = tk.StringVar()
-        self.peak_detection_enabled = tk.BooleanVar()
-        self.averaging_enabled = tk.BooleanVar()
-        self.time_constant_value = tk.StringVar()
-        self.num_samples_value = tk.StringVar()
 
-        # Widgets
-        self.create_widgets()
+dataFile1 = pd.read_csv("Data to Linearize/from .txt (example calibration data).csv")
+dataFile2 = pd.read_csv("Data to Linearize/from Calibration Example and template.csv")
+dataFile3 = pd.read_csv("Data to Linearize/from Big Data.csv")
 
-    def create_widgets(self):
-        # Title
-        tk.Label(self.root, text="Temperature Data Processor", font=("Helvetica", 16)).pack(pady=10)
+T1 = dataFile1.get("Temp")  # y is a panda Series of temperatures
+V1 = dataFile1.get("Voltage")  # y is a panda Series of voltages
+T2 = dataFile2.get("Temp")  # y is a panda Series of temperatures
+V2 = dataFile2.get("Voltage")  # y is a panda Series of voltages
+T3 = dataFile3.iloc[2:8, 0]  # y is a panda Series of temperatures
+V3 = dataFile3.iloc[2:8, 1]  # y is a panda Series of voltages
+print(V3)
 
-        # Raw File
-        tk.Label(self.root, text="Raw Temperature CSV:").pack(pady=5)
-        tk.Entry(self.root, textvariable=self.raw_file_path, width=50, state='readonly').pack()
-        tk.Button(self.root, text="Browse Raw CSV", command=self.browse_raw_file).pack(pady=5)
+# linearizing
+x1 = 1 / T1
+x2 = 1 / T2
+x3 = 1 / T3
+y1, y2, y3 = [], [], []
+for value in V1:  # y = ln V
+    y1.append(math.log(value))
+for value in V2:  # y = ln V
+    y2.append(math.log(value))
+for value in V3:  # y = ln V
+    y3.append(math.log(value))
 
-        # Calibration Files
-        tk.Label(self.root, text="Calibration CSV Files:").pack(pady=5)
-        self.calibration_label = tk.Label(self.root, text="No calibration files selected")
-        self.calibration_label.pack()
-        tk.Button(self.root, text="Browse Calibration CSV(s)", command=self.browse_calibration_files).pack(pady=5)
+### Best fits of all data sets graphing
+figure()
+plot(x1, y1, marker=".", markersize=5, ls=" ", color="black")
+plot(x2, y2, marker=".", markersize=5, ls=" ", color="red")
+plot(x3, y3, marker=".", markersize=5, ls=" ", color="blue")
 
-        # Emissivity
-        tk.Label(self.root, text="Emissivity Value:").pack(pady=5)
-        tk.Entry(self.root, textvariable=self.emissivity_value).pack()
+title("Linearisation of Voltage to Temperature of Different Photodiodes")
+xlabel(r"$\frac{1}{T}$ ($K^{-1}$)", size="12")
+ylabel("ln V")
 
-        # Peak Detection
-        tk.Checkbutton(self.root, text="Enable Peak Detection", variable=self.peak_detection_enabled, command=self.toggle_time_constant).pack(pady=5)
+m1, c1 = polyfit(x1, y1, 1)  # get m and c from best fit, y = mx + c
+m2, c2 = polyfit(x2, y2, 1)
+m3, c3 = polyfit(x3, y3, 1)
 
-        # Time Constant (enabled only if peak detection checked)
-        tk.Label(self.root, text="Time Constant (s):").pack(pady=5)
-        self.time_constant_entry = tk.Entry(self.root, textvariable=self.time_constant_value, state="disabled")
-        self.time_constant_entry.pack()
+bestfy1 = m1 * x1 + c1
+bestfy2 = m2 * x2 + c2
+bestfy3 = m3 * x3 + c3
 
-        # Averaging
-        tk.Checkbutton(self.root, text="Enable Averaging", variable=self.averaging_enabled, command=self.toggle_num_samples).pack(pady=5)
+plot(x1, bestfy1, ls=":", color="black", label="InGaAs Photodiode")
+plot(x2, bestfy2, ls=":", color="red", label="Si Photodiode")
+plot(x3, bestfy3, ls=":", color="blue", label="Si Avalanche Photodiode")
 
-        # Number of Samples (enabled only if averaging checked)
-        tk.Label(self.root, text="Number of Samples for Averaging:").pack(pady=5)
-        self.num_samples_entry = tk.Entry(self.root, textvariable=self.num_samples_value, state="disabled")
-        self.num_samples_entry.pack()
+legend()
+grid()
+axhline(0, color='black')  # x = 0
+axvline(0, color='black')  # y = 0
 
-        # Process Button
-        tk.Button(self.root, text="Process Data", command=self.process_data).pack(pady=20)
+print("BLACK: m = " + str(m1) + ", c = " + str(c1))
+print("RED: m = " + str(m2) + ", c = " + str(c2))
+print("BLUE: m = " + str(m3) + ", c = " + str(c3))
+print(
+    "BLACK is from example.txt file (InGaAs), RED is from calibration example and template (Si), BLUE is from big data files (Si APD)")
 
-    def toggle_time_constant(self):
-        if self.peak_detection_enabled.get():
-            self.time_constant_entry.config(state="normal")
-        else:
-            self.time_constant_entry.config(state="disabled")
-            self.time_constant_value.set('')
+### convert voltage to temperature using calibration parameters
 
-    def toggle_num_samples(self):
-        if self.averaging_enabled.get():
-            self.num_samples_entry.config(state="normal")
-        else:
-            self.num_samples_entry.config(state="disabled")
-            self.num_samples_value.set('')
+# from blue line in graph above, m = -15404.425383931075, c = 10.876797484015087
+m4 = m3
+c4 = c3
 
-    def browse_raw_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
-        if file_path:
-            self.raw_file_path.set(file_path)
+# remove blanked value
+blankedBlue = 0.001508862
+dataFile4 = pd.read_csv("sampleBigData/1200C Si APD open 1.csv")
+v4 = dataFile4.get("Voltage")  # v4 is a panda Series of voltages from Si APD
+lnv4 = []  # get lnV values
+for value in v4:
+    lnv4.append(math.log(value - blankedBlue))
 
-    def browse_calibration_files(self):
-        file_paths = filedialog.askopenfilenames(filetypes=[("CSV Files", "*.csv")])
-        if file_paths:
-            self.calibration_file_paths = list(file_paths)
-            self.calibration_label.config(text=f"{len(self.calibration_file_paths)} file(s) selected")
+# range of time to use in us
+micro = 0.000001
+lowlim = 0
+prec = 0.01  # interval
+uplim = 10
 
-    def process_data(self):
-        if not self.raw_file_path.get():
-            messagebox.showerror("Error", "Please select a raw temperature CSV file.")
-            return
+x4 = np.arange(lowlim, uplim, prec)  # ndarray of x values, mimicking the time
+print((uplim - lowlim) / prec)
+temp4 = []
+for i in range(int((uplim - lowlim) / prec)):
+    temp4.append(m3 / (lnv4[i] - c3))  ## from equation T = m/(lnV - c)
 
-        try:
-            emissivity = float(self.emissivity_value.get())
-        except ValueError:
-            messagebox.showerror("Error", "Please enter a valid emissivity value.")
-            return
+### peak detection graphing
 
-        time_constant = None
-        if self.peak_detection_enabled.get():
-            try:
-                time_constant = float(self.time_constant_value.get())
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid time constant value.")
-                return
+figure()
+plot(x4, temp4, marker=".", markersize=5, ls="-")
+title("Peak detection of 1 data set at temp = 1200 °C (not blanked yet), Time constant = 1000s")
+xlabel("Time (s)")
+ylabel("ln V")
 
-        num_samples = None
-        if self.averaging_enabled.get():
-            try:
-                num_samples = int(self.num_samples_value.get())
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid integer for number of samples.")
-                return
+# peak detection
+peaks = simplePeakDetect(x4, temp4, 1000)
+plot(x4, peaks, marker="", markersize=2)
 
-        process_data(
-            raw_file=self.raw_file_path.get(),
-            calibration_files=self.calibration_file_paths,
-            emissivity=emissivity,
-            apply_peak_detection=self.peak_detection_enabled.get(),
-            time_constant=time_constant,
-            apply_averaging=self.averaging_enabled.get(),
-            num_samples=num_samples
-        )
+# Temperature
 
-# Run the app
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = TemperatureProcessingApp(root)
-    root.mainloop()
+figure()
+
+plot(x4, temp4, marker=".", markersize=5, ls="-", linewidth="2", label='Calibrated Measurement', color="black")
+title("Si APD measurements of a blackbody furnace at T = 1473.15 K")
+xlabel("Time (µs)")
+ylabel("Temperature (K)")
+
+# line at T = 1473.15 K
+l4 = []
+for value in x4:
+    l4.append(1473.15)
+# plot(x4, l4, marker=" ", markersize=5, ls="-", linewidth='4',label='Blackbody Temperature')
+
+averages10 = simpleAvg(temp4, 20)
+averages5 = simpleAvg(temp4, 5)
+averages50 = simpleAvg(temp4, 50)
+
+plot(x4, averages10, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 10 data points', color="red")
+plot(x4, averages5, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 5 data points', color="green")
+plot(x4, averages50, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 50 data points',
+     color="magenta")
+
+legend()
+
+show()
