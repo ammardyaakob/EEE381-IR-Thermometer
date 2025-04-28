@@ -18,7 +18,7 @@ v = file.iloc[0:N-1, 1]
 
 
 
-y = simplePeakDetect(t,v,8)
+y = simplePeakDetect(t,v,0.05)
 
 figure(figsize=(9,6))
 title("Chopper Wheel Measurement at 1000°C")

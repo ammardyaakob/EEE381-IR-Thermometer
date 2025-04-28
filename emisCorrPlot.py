@@ -31,7 +31,7 @@ for i in range(len(chosenEmis)): # loads the
     v = emisComp(v,emisArr[i])
     temp = voltToTemp(v, m, c, True)
     temp = simpleAvg(temp,250)
-    plot(t * 100, temp, label="Emissivity #"+str(i+1))
+    plot(t * 100, temp, label="Emissivity = "+str((round(emisArr[i],3))))
 
 title("Blackbody Temperatures with Emissivity Compensation and Averaging")
 xlabel("Time (ms)")

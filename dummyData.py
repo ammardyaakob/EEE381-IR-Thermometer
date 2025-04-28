@@ -61,7 +61,7 @@ ylabel("Temperature (K)")
 plot(x5, temp, marker=".", markersize=5, ls="", label="Generated Datapoints")
 
 # average
-avgs = simpleAvg(x5, temp, 15)
+avgs = simpleAvg( temp, 15)
 
 plot(x5, avgs, marker=".", markersize = 4, ls="", linewidth="3", label = "Averaging Function")
 legend()
