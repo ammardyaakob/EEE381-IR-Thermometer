@@ -39,7 +39,7 @@ for value in V3:  # y = ln V
     y3.append(math.log(value))
 
 ### Best fits of all data sets graphing
-figure()
+figure(figsize=(9,6))
 plot(x1, y1, marker=".", markersize=5, ls=" ", color="black")
 plot(x2, y2, marker=".", markersize=5, ls=" ", color="red")
 plot(x3, y3, marker=".", markersize=5, ls=" ", color="blue")
@@ -91,19 +91,20 @@ lowlim = 0
 prec = 0.01  # interval
 uplim = 10
 
+#convert volt to temp
 x4 = np.arange(lowlim, uplim, prec)  # ndarray of x values, mimicking the time
 print((uplim - lowlim) / prec)
 temp4 = []
 for i in range(int((uplim - lowlim) / prec)):
-    temp4.append(m3 / (lnv4[i] - c3))  ## from equation T = m/(lnV - c)
+    temp4.append((m3 / (lnv4[i] - c3)) + 273.15)  ## from equation T = m/(lnV - c)
 
 ### peak detection graphing
 
-figure()
+figure(figsize=(9,6))
 plot(x4, temp4, marker=".", markersize=5, ls="-")
 title("Peak detection of 1 data set at temp = 1200 °C (not blanked yet), Time constant = 1000s")
 xlabel("Time (s)")
-ylabel("ln V")
+ylabel("Temperature (K)")
 
 # peak detection
 peaks = simplePeakDetect(x4, temp4, 1000)
@@ -111,7 +112,7 @@ plot(x4, peaks, marker="", markersize=2)
 
 # Temperature
 
-figure()
+figure(figsize=(9,6))
 
 plot(x4, temp4, marker=".", markersize=5, ls="-", linewidth="2", label='Calibrated Measurement', color="black")
 title("Si APD measurements of a blackbody furnace at T = 1473.15 K")

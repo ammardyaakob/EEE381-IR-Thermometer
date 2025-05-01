@@ -6,6 +6,7 @@ import glob
 import os
 
 from fontTools.misc.cython import returns
+from numpy.ma.extras import average
 
 from averaging import simpleAvg
 from matplotlib.lines import lineMarkers
@@ -32,21 +33,23 @@ def findLinGraph(folderStr : str, lowestTemp, highestTemp, increment, samples, c
     # Returns calibrated 1/T and lnV arrays
  # PUT FOLDER DIRECTORY FROM PROJECT CONTEXT IN folderStr e.g 'Raw Data/Measurements26Feb/'
  # DATA FILES MUST BE [TEMP].csv AND BLOCKED DATA FILES MUST BE [TEMP]B.csv e.g. "1300.csv" and "1300B.csv" IN ONE FOLDER
+    # samples is the amount of data points to take for the calibration
+    #increment is the temperature step between each calibration measurement
 
     voltages = []
     temps = []
 
     for temperature in range(lowestTemp,highestTemp+1,increment):
-        filePath = folderStr+str(temperature)+".csv" # string e.g "Raw Data/Measurements26Feb/1300.csv"
-        filePathBlocked = folderStr+str(temperature)+"B.csv" # string e.g "Raw Data/Measurements26Feb/1300B.csv"
+        filePath = folderStr+'/'+str(temperature)+".csv" # string e.g "Raw Data/Measurements26Feb/1300.csv"
+        filePathBlocked = folderStr+'/'+str(temperature)+"B.csv" # string e.g "Raw Data/Measurements26Feb/1300B.csv"
 
         # Read set of data and blocked data
         df = pd.read_csv(filePath)
         dfBlocked = pd.read_csv(filePathBlocked)
 
         # calculate the average of each set
-        avg = simpleAvg(df.loc[:, "Dev1/ai0"], samples)[samples-1]
-        avgBlocked = simpleAvg(dfBlocked.loc[:, "Dev1/ai0"], samples)[samples-1]
+        avg = average(df.loc[:samples, "Dev1/ai0"])
+        avgBlocked = average(dfBlocked.loc[:samples, "Dev1/ai0"])
         print(temperature, avg-avgBlocked)
         voltages.append(avg-avgBlocked)
 
@@ -59,7 +62,7 @@ def findLinGraph(folderStr : str, lowestTemp, highestTemp, increment, samples, c
     print("m =",m,"c =",c, "Mean Eff. Wavelength:", -(0.014388/m))
     return listRcp(temps),listLn(voltages)
 
-def findLinParams(folderStr : str, lowestTemp, highestTemp, increment, samples, celsius:bool):
+def findLinParams(folderStr : str, lowestTemp : int, highestTemp: int, increment, samples, celsius:bool):
     # Returns m and C values of calibrated lnV against 1/T graph.
  # PUT FOLDER DIRECTORY FROM PROJECT CONTEXT IN folderStr e.g 'Raw Data/Measurements26Feb/'
  # DATA FILES MUST BE [TEMP].csv AND BLOCKED DATA FILES MUST BE [TEMP]B.csv e.g. "1300.csv" and "1300B.csv" IN ONE FOLDER
@@ -68,16 +71,16 @@ def findLinParams(folderStr : str, lowestTemp, highestTemp, increment, samples, 
     temps = []
 
     for temperature in range(lowestTemp,highestTemp+1,increment):
-        filePath = folderStr+str(temperature)+".csv" # string e.g "Raw Data/Measurements26Feb/1300.csv"
-        filePathBlocked = folderStr+str(temperature)+"B.csv" # string e.g "Raw Data/Measurements26Feb/1300B.csv"
+        filePath = folderStr+'/'+str(temperature)+".csv" # string e.g "Raw Data/Measurements26Feb/1300.csv"
+        filePathBlocked = folderStr+'/'+str(temperature)+"B.csv" # string e.g "Raw Data/Measurements26Feb/1300B.csv"
 
         # Read set of data and blocked data
         df = pd.read_csv(filePath)
         dfBlocked = pd.read_csv(filePathBlocked)
 
         # calculate the average of each set
-        avg = simpleAvg(df.loc[:, "Dev1/ai0"], samples)[samples-1]
-        avgBlocked = simpleAvg(dfBlocked.loc[:, "Dev1/ai0"], samples)[samples-1]
+        avg = average(df.loc[:samples, "Dev1/ai0"])
+        avgBlocked = average(dfBlocked.loc[:samples, "Dev1/ai0"])
         print(temperature, avg-avgBlocked)
         voltages.append(avg-avgBlocked)
 
@@ -104,8 +107,8 @@ def voltToTemp(vArr, m, c, celsius):
 def voltToEmis(vArr, m, c, celsius): #compares with emissivity 0 at T = 1300C
     emis = []
     for i in range(len(vArr)):
-        emis.append(vArr[i]/1.6793170632779995) ## V/V0
-    return emis
+        emis.append(vArr[i]/1.67931706328) ## V/V0
+    return average(emis)
 
 def emisComp(vArr, emis):
     comped = []

@@ -29,7 +29,7 @@ peaks = simplePeakDetect(time,voltage,5)
 plot(time,voltage)
 plot(time, peaks)
 xlabel("Time (s)")
-ylabel("Voltage (V)")
+ylabel("Temperature (T)")
 title("Generated Data with Pulses")
 show()
 

@@ -5,6 +5,7 @@ from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend,
 from numpy import polyfit
 
 from averaging import simpleAvg
+from calibration import voltToTemp, findLinParams
 from peakdetect import simplePeakDetect
 import math as math
 
@@ -15,15 +16,22 @@ N = 125
 Fs = 1000
 t = np.arange(0, (N-1)/Fs, 1/Fs)
 v = file.iloc[0:N-1, 1]
+lifted = []
+for data in v:
+    if data < 0:
+        lifted.append(0.0020)
+    else:
+        lifted.append(data)
 
+m,c = findLinParams(folderStr="Raw Data/Measurements26Feb/",lowestTemp=700, highestTemp=1300,celsius=True,samples=500, increment=100)
+temp = voltToTemp(lifted,m,c+1.38, True)
 
-
-y = simplePeakDetect(t,v,0.05)
+y = simplePeakDetect(t,temp,0.05)
 
 figure(figsize=(9,6))
-title("Chopper Wheel Measurement at 1000°C")
-plot(t*100,v)
+title("Peak Detection of Chopper Wheel Measurement at 1000°C")
+plot(t*100,temp)
 plot(t*100,y)
 xlabel("Time (ms)")
-ylabel("Voltage (V)")
+ylabel("Temperature (°C)")
 show()
