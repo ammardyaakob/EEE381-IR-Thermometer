@@ -4,7 +4,7 @@ from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend,
     axvline, xlim
 
 myDataRcpT, myDataLnV = findLinGraph('Raw Data/Measurements26Feb/', 600, 1300, 100, 500, True)
-LouisDataRcpT, LouisDataLnV = findLinGraph('Raw Data/Louis Data/', 900, 1300, 100, 500, True)
+#LouisDataRcpT, LouisDataLnV = findLinGraph('Raw Data/Louis Data/', 900, 1300, 100, 500, True)
 m,c = findLinParams('Raw Data/Measurements26Feb/', 600, 1300, 100, 500, True)
 x = [0.0006,0.0012]
 y = []
@@ -18,9 +18,10 @@ plot(myDataRcpT,myDataLnV,marker='.',label='Ammar\'s Data')
 plot(x,y)
 xlim(0.0006,0.0012)
 
-plot(LouisDataRcpT,LouisDataLnV,marker='x',label='Louis\' Data')
+#plot(LouisDataRcpT,LouisDataLnV,marker='x',label='Louis\' Data')
+title("Linearisation of the IRT")
 grid()
 axhline(0,color='black') # x = 0
 axvline(0,color='black') # y = 0
-legend()
+#legend()
 show()

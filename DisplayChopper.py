@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from matplotlib.lines import lineMarkers
 from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend, grid, axhline, axline, axvspan, axvline
 from numpy import polyfit
@@ -27,11 +28,18 @@ m,c = findLinParams(folderStr="Raw Data/Measurements26Feb/",lowestTemp=700, high
 temp = voltToTemp(lifted,m,c+1.38, True)
 
 y = simplePeakDetect(t,temp,0.05)
-
-figure(figsize=(9,6))
+fig = plt.figure(figsize=(9,6))
+ax = fig.add_subplot(1, 1, 1)
 title("Peak Detection of Chopper Wheel Measurement at 1000°C")
-plot(t*100,temp)
-plot(t*100,y)
-xlabel("Time (ms)")
+plot(t*100,temp,label = "Peak Detector On")
+plot(t*100,y,label = "Peak Detector Off")
+xlabel("Time (s)")
 ylabel("Temperature (°C)")
+box = ax.get_position()
+ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                 box.width, box.height * 0.9])
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.25),
+          fancybox=True, shadow=True, ncol=2)
+
+grid()
 show()

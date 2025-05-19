@@ -1,10 +1,14 @@
 from cProfile import label
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from click import style
 from matplotlib.lines import lineMarkers
-from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend, grid, axhline, axline, axvspan, axvline
+from matplotlib.pyplot import xlabel, ylabel, plot, figure, show, title, legend, grid, axhline, axline, axvspan, \
+    axvline, ticklabel_format, subplots
 from numpy import polyfit
+from numpy.ma.extras import apply_over_axes
 
 from averaging import simpleAvg
 from peakdetect import simplePeakDetect
@@ -89,14 +93,14 @@ for value in v4:
 micro = 0.000001
 lowlim = 0
 prec = 0.01  # interval
-uplim = 10
+uplim = 1
 
 #convert volt to temp
 x4 = np.arange(lowlim, uplim, prec)  # ndarray of x values, mimicking the time
 print((uplim - lowlim) / prec)
 temp4 = []
 for i in range(int((uplim - lowlim) / prec)):
-    temp4.append((m3 / (lnv4[i] - c3)) + 273.15)  ## from equation T = m/(lnV - c)
+    temp4.append((m3 / (lnv4[i] - c3)) - 273.15)  ## from equation T = m/(lnV - c)
 
 ### peak detection graphing
 
@@ -112,12 +116,13 @@ plot(x4, peaks, marker="", markersize=2)
 
 # Temperature
 
-figure(figsize=(9,6))
+fig, ax = subplots(figsize=(9, 6))
 
-plot(x4, temp4, marker=".", markersize=5, ls="-", linewidth="2", label='Calibrated Measurement', color="black")
-title("Si APD measurements of a blackbody furnace at T = 1473.15 K")
-xlabel("Time (µs)")
-ylabel("Temperature (K)")
+ax.plot(x4, temp4, marker=".", markersize=5, ls="-", linewidth="2", label='Calibrated Measurement', color="black")
+ax.set_title("Si APD measurements of a blackbody furnace at T = 1200 °C")
+ax.set_xlabel("Time (ms)")
+ax.set_ylabel("Temperature (°C)")
+ax.ticklabel_format(axis='y',style='')
 
 # line at T = 1473.15 K
 l4 = []
@@ -129,11 +134,15 @@ averages10 = simpleAvg(temp4, 20)
 averages5 = simpleAvg(temp4, 5)
 averages50 = simpleAvg(temp4, 50)
 
-plot(x4, averages10, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 10 data points', color="red")
-plot(x4, averages5, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 5 data points', color="green")
-plot(x4, averages50, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 50 data points',
+ax.plot(x4, averages10, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 10 data points', color="red")
+ax.plot(x4, averages5, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 5 data points', color="green")
+ax.plot(x4, averages50, marker="", markersize=3, ls="-", linewidth='1.5', label='Averaging: 50 data points',
      color="magenta")
-
-legend()
-
+box = ax.get_position()
+ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                 box.width, box.height * 0.9])
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.25),
+          fancybox=True, shadow=True, ncol=2)
+plt.ylim(1199,1201)
+grid()
 show()
